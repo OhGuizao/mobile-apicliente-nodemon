@@ -5,6 +5,25 @@ const nodemon = require("nodemon")
 // iniciaremos criando um referêcia do express com a importância do modulo
 const express = require('express');
 
+//Vamos importar o módulo mongoose que fará a interface entre o node.js e o banco da dados mongobd
+const mongoose = require("mongoose");
+
+//Local de conexão com o banco de dados
+const url = "mongodb+srv://guilhermevfs:guilherme123@clustercliente.yaa0v.mongodb.net/primeiraapi?retryWrites=true&w=majority";
+mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
+
+
+// Vamos criar a estrutura de tabela cliente com o comando de Schema
+const tabela = mongoose.Schema({
+    nome: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    cpf: { type: String, required: true, unique: true },
+    usuario: { type: String, required: true, unique: true },
+    senha: { type: String, required: true }
+});
+
+//Execucão da tabela
+const cliente = mongoose.model("dbcliente", tabela)
 //criar uma referência do servidor express para utilizá-lo
 const app = express();
 
@@ -22,14 +41,21 @@ Abaixo, iremos criar as 4 rotas para os verbos GET, POST, PUT, DELETE:
 
 
     Ao final das rotas iremos aplicar ao servidor, uma porta de comunicação, no nosso caso será a porta 3000(porta padrão).
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 */
 
 
 //  ---------->  GET
 app.get("/api/cliente/", (req, res) => {
-    res.send("Você está na rota do GET");
+    cliente.find((erro, dados) => {
+        if (erro) {
+            return res.status(400).send({ output: `Erro ao tentar ler os clientes : ${erro}` });
+        }
+        res.status(200).send({ output: dados });
+    }
+
+    );
 });
 
 
@@ -51,4 +77,6 @@ app.delete("/api/cliente/deletar/:id", (req, res) => {
 });
 
 
-app.listen(3000,()=>console.log("Servidor online em http://localhost:3000"));
+app.listen(3000, () => console.log("Servidor online em http://localhost:3000"));
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

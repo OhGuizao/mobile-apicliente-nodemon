@@ -9,3 +9,8 @@
         (Se caso o powershell não permitir utilize o comando: Set-execution policy unrestricted)
 - npm i express nodemon (./backend/PROJETO)
     irá baixar um módulo express que quando atualizar o codigo, o servidor irá recarregar
+
+-npm i mongoose
+    instalação do mongoose
+- mongodb+srv://guilhermevfs:<password>@clustercliente.yaa0v.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
+    caminho de conexão
