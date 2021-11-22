@@ -1,0 +1,11 @@
+- npm init... (./backend/PROJETO)
+     e responda as questões.
+
+- cria um arquivo chamado .gitignore
+    dentro dele rode o comando: "node-modules"
+
+- npm i -g nodemon
+    irá baixar um arquivo global no seu usuário
+        (Se caso o powershell não permitir utilize o comando: Set-execution policy unrestricted)
+- npm i express nodemon (./backend/PROJETO)
+    irá baixar um módulo express que quando atualizar o codigo, o servidor irá recarregar
