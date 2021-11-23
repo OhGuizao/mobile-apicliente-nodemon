@@ -14,3 +14,7 @@
     instalação do mongoose
 - mongodb+srv://guilhermevfs:<password>@clustercliente.yaa0v.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
     caminho de conexão
+
+
+-npm i bcrypy
+    instalação do pacote de criptografia de dados

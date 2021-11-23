@@ -1,5 +1,6 @@
 const nodemon = require("nodemon")
 
+
 // Vamos construir um servidor usando o módulo do Express.
 // Este módulo possue funções para executar e manipular um servidor node
 // iniciaremos criando um referêcia do express com a importância do modulo
@@ -7,6 +8,9 @@ const express = require('express');
 
 //Vamos importar o módulo mongoose que fará a interface entre o node.js e o banco da dados mongobd
 const mongoose = require("mongoose");
+
+//Importação do bcrypt para a criptografia de senhas
+const bcrypt = require("bcrypt");
 
 //Local de conexão com o banco de dados
 const url = "mongodb+srv://guilhermevfs:guilherme123@clustercliente.yaa0v.mongodb.net/primeiraapi?retryWrites=true&w=majority";
@@ -20,6 +24,18 @@ const tabela = mongoose.Schema({
     cpf: { type: String, required: true, unique: true },
     usuario: { type: String, required: true, unique: true },
     senha: { type: String, required: true }
+});
+
+//Aplicação da cryptografia do bcrypt a tabela de cadastro de clientes será feita um passo antes do salvamento dos dados do cliente
+// Vamos usar o comando pre
+tabela.pre("save", function (next) {
+    let cliente = this;
+    if (!cliente.isModified('senha')) return next()
+    bcrypt.hash(cliente.senha, 10, (erro, rs /*Resultado da cryptogração*/) => {
+        if (erro) return console.log(`erro ao gerar a senha ->${erro}`);
+        cliente.senha = rs;
+        return next();
+    })
 });
 
 //Execucão da tabela
@@ -58,6 +74,18 @@ app.get("/api/cliente/", (req, res) => {
     );
 });
 
+app.get("/api/cliente/:id", (req, res) => {
+    Cliente.findById(req.params.id, (erro, dados) => {
+        if (erro) {
+            return res.status(400).send({ output: `Erro ao tentar ler os clientes : ${erro}` });
+        }
+        res.status(200).send({ output: dados });
+    }
+
+    );
+});
+
+
 
 
 //  ----------> POST
@@ -68,23 +96,36 @@ app.post("/api/cliente/cadastro", (req, res) => {
     })
         .catch((erro) => res.status(400).send({ output: `Erro ao tentar cadastrar o cliente -> ${erro}` }))
 });
-
+app.post("/api/cliente/login", (req, res) => {
+    const us = req.body.usuario;
+    const pw = req.body.senha;
+    Cliente.findOne({ usuario: us }, (erro, dados) => {
+        if (erro) {
+            return res.status(400).send({ output: `Usuário nao encontrado -. ${erro}` })
+        }
+        bcrypt.compare(pw, dados.senha, (erro, igual) => {
+            if (erro) return res.status(400).send({ output: `Erro ao tentar logar ->${erro}` });
+            if (!igual) return res.status(400).send({ output: `Erro ao tentar logar ->${erro}` });
+            res.status(200).send({ output: `Logado`, payload: dados });
+        });
+    })
+});
 
 //  ----------> PUT
 app.put("/api/cliente/atualizar/:id", (req, res) => {
-    Cliente.findByIdAndUpdate(req.params.id, req.body,(erro, dados) => {
-        if(erro) {
+    Cliente.findByIdAndUpdate(req.params.id, req.body, (erro, dados) => {
+        if (erro) {
             return res.status(400).send({ output: `Erro ao tentar atualizar -> ${erro}` });
         }
-        res.status(200).send({output:`Dados atualizados`})
+        res.status(200).send({ output: `Dados atualizados` })
     })
 });
 
 // ----------> DELETE
 app.delete("/api/cliente/deletar/:id", (req, res) => {
-    Cliente.findByIdAndDelete(req.params.id,(erro,dados)=>{
-        if(erro){
-            return res.status(400).send({output:`Erro ao tentar apagar o cliente ->${erro}`});
+    Cliente.findByIdAndDelete(req.params.id, (erro, dados) => {
+        if (erro) {
+            return res.status(400).send({ output: `Erro ao tentar apagar o cliente ->${erro}` });
         }
         res.status(204).send({});
     })
