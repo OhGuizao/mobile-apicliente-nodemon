@@ -23,11 +23,11 @@ const tabela = mongoose.Schema({
 });
 
 //Execucão da tabela
-const cliente = mongoose.model("dbcliente", tabela)
-//criar uma referência do servidor express para utilizá-lo
+const Cliente = mongoose.model("dbcliente", tabela)
+//Criar uma referência do servidor express para utilizá-lo
 const app = express();
 
-//fazer o servidor express recebr e tratar dados em formato json
+//Fazer o servidor express recebr e tratar dados em formato json
 app.use(express.json());
 
 /*
@@ -48,7 +48,7 @@ Abaixo, iremos criar as 4 rotas para os verbos GET, POST, PUT, DELETE:
 
 //  ---------->  GET
 app.get("/api/cliente/", (req, res) => {
-    cliente.find((erro, dados) => {
+    Cliente.find((erro, dados) => {
         if (erro) {
             return res.status(400).send({ output: `Erro ao tentar ler os clientes : ${erro}` });
         }
@@ -62,18 +62,33 @@ app.get("/api/cliente/", (req, res) => {
 
 //  ----------> POST
 app.post("/api/cliente/cadastro", (req, res) => {
-    res.send(`Os dados enviados foram ${req.body.nome}`)
+    const cliente = new Cliente(req.body);
+    cliente.save().then(() => {
+        res.status(201).send({ output: `Cliente cadastrado` })
+    })
+        .catch((erro) => res.status(400).send({ output: `Erro ao tentar cadastrar o cliente -> ${erro}` }))
 });
 
 
 //  ----------> PUT
 app.put("/api/cliente/atualizar/:id", (req, res) => {
-    res.send(`O  id passado foi o ${req.params.id} e os dados para atualizar são ${req.body}`);
+    Cliente.findByIdAndUpdate(req.params.id, req.body,(erro, dados) => {
+        if(erro) {
+            return res.status(400).send({ output: `Erro ao tentar atualizar -> ${erro}` });
+        }
+        res.status(200).send({output:`Dados atualizados`})
+    })
 });
 
 // ----------> DELETE
 app.delete("/api/cliente/deletar/:id", (req, res) => {
-    res.send(`O id passado foi ${req.params.id}`);
+    Cliente.findByIdAndDelete(req.params.id,(erro,dados)=>{
+        if(erro){
+            return res.status(400).send({output:`Erro ao tentar apagar o cliente ->${erro}`});
+        }
+        res.status(204).send({});
+    })
+
 });
 
 
