@@ -12,6 +12,13 @@ const mongoose = require("mongoose");
 //Importação do bcrypt para a criptografia de senhas
 const bcrypt = require("bcrypt");
 
+//Jason web token garante a seção de segura em uma página ou grupo de páginas, ele é gerado a partir de alguns elementos
+//dados quem importam ao token(play-load), chave secreta, tempo de expiração e método fe criptografia
+const jwt = require("jsonwebtoken");
+const { request } = require("express");
+const cfn = require('./conf');
+const { jwt_expires,jwt_key } = require("./conf");
+
 //Local de conexão com o banco de dados
 const url = "mongodb+srv://guilhermevfs:guilherme123@clustercliente.yaa0v.mongodb.net/primeiraapi?retryWrites=true&w=majority";
 mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -57,7 +64,7 @@ Abaixo, iremos criar as 4 rotas para os verbos GET, POST, PUT, DELETE:
 
 
     Ao final das rotas iremos aplicar ao servidor, uma porta de comunicação, no nosso caso será a porta 3000(porta padrão).
-
+0
 
 */
 
@@ -92,7 +99,8 @@ app.get("/api/cliente/:id", (req, res) => {
 app.post("/api/cliente/cadastro", (req, res) => {
     const cliente = new Cliente(req.body);
     cliente.save().then(() => {
-        res.status(201).send({ output: `Cliente cadastrado` })
+        const gerado = criaToken(req.body, req.body.nome);
+        res.status(201).send({ output: `Cliente cadastrado`, token: gerado })
     })
         .catch((erro) => res.status(400).send({ output: `Erro ao tentar cadastrar o cliente -> ${erro}` }))
 });
@@ -106,13 +114,14 @@ app.post("/api/cliente/login", (req, res) => {
         bcrypt.compare(pw, dados.senha, (erro, igual) => {
             if (erro) return res.status(400).send({ output: `Erro ao tentar logar ->${erro}` });
             if (!igual) return res.status(400).send({ output: `Erro ao tentar logar ->${erro}` });
-            res.status(200).send({ output: `Logado`, payload: dados });
+            const gerado = criaToken(dados.usuario, dados.nome);
+            res.status(200).send({ output: `Logado`, token: gerado, payload: dados });
         });
     })
 });
 
 //  ----------> PUT
-app.put("/api/cliente/atualizar/:id", (req, res) => {
+app.put("/api/cliente/atualizar/:id", jwpVerifica, (req, res) => {
     Cliente.findByIdAndUpdate(req.params.id, req.body, (erro, dados) => {
         if (erro) {
             return res.status(400).send({ output: `Erro ao tentar atualizar -> ${erro}` });
@@ -122,16 +131,36 @@ app.put("/api/cliente/atualizar/:id", (req, res) => {
 });
 
 // ----------> DELETE
-app.delete("/api/cliente/deletar/:id", (req, res) => {
+app.delete("/api/cliente/deletar/:id", jwpVerifica, (req, res) => {
     Cliente.findByIdAndDelete(req.params.id, (erro, dados) => {
         if (erro) {
             return res.status(400).send({ output: `Erro ao tentar apagar o cliente ->${erro}` });
         }
-        res.status(204).send({});
+        res.status(204).send({output:`Cliente apagado`});
     })
 
 });
+//teste do jwt
+const criaToken = (usuario, nome) => {
+    return jwt.sign({ usuario: usuario, nome: nome }, cfn.jwt_key, { expiresIn: cfn.jwt_expires });
+}
 
+// Validação do token
+function jwpVerifica(req, res, next) {
+    const tokenGerado = req.headers.token;
+    if (!tokenGerado) {
+        return res.status(401).send({ output: `Requisição negada! Você não possui um Token` })
+
+
+    }
+    jwt.verify(tokenGerado, cfn.jwt_key, (erro, dados) => {
+        if (erro) {
+            return res.status(401).send({ output: "Token inválido" });
+        }
+        // res.status(200).send({ output: `Autorizado`, payload: `Olá ${dados.nome}` });
+        next();
+    });
+}
 
 app.listen(3000, () => console.log("Servidor online em http://localhost:3000"));
 
