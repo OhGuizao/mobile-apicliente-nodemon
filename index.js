@@ -6,6 +6,9 @@ const nodemon = require("nodemon")
 // iniciaremos criando um referêcia do express com a importância do modulo
 const express = require('express');
 
+//Vamos importar o modulo do cors que vai fazer a conexao de html com http e etc
+const cors = require('cors')
+
 //Vamos importar o módulo mongoose que fará a interface entre o node.js e o banco da dados mongobd
 const mongoose = require("mongoose");
 
@@ -52,6 +55,7 @@ const app = express();
 
 //Fazer o servidor express recebr e tratar dados em formato json
 app.use(express.json());
+app.use(cors());
 
 /*
 
@@ -102,7 +106,7 @@ app.post("/api/cliente/cadastro", (req, res) => {
         const gerado = criaToken(req.body, req.body.nome);
         res.status(201).send({ output: `Cliente cadastrado`, token: gerado })
     })
-        .catch((erro) => res.status(400).send({ output: `Erro ao tentar cadastrar o cliente -> ${erro}` }))
+        .catch((erro) => res.status(400).send({ output: `Erro ao tentar cadastrar o cliente`,message:erro}))
 });
 app.post("/api/cliente/login", (req, res) => {
     const us = req.body.usuario;
