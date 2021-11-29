@@ -21,3 +21,6 @@
 
 -npm install jsonwebtoken
     json web token instalação
+
+-npm i cors
+    

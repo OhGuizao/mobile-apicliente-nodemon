@@ -74,7 +74,7 @@ Abaixo, iremos criar as 4 rotas para os verbos GET, POST, PUT, DELETE:
 
 
 //  ---------->  GET
-app.get("/api/cliente/", (req, res) => {
+app.get("/api/cliente/",jwpVerifica, (req, res) => {
     Cliente.find((erro, dados) => {
         if (erro) {
             return res.status(400).send({ output: `Erro ao tentar ler os clientes : ${erro}` });
