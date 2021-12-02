@@ -1,9 +1,16 @@
+
+FRONTEND
+-npm i
+    instalação do npm
+
+
+
+
+BACKEND
 - npm init... (./backend/PROJETO)
      e responda as questões.
-
 - cria um arquivo chamado .gitignore
     dentro dele rode o comando: "node-modules"
-
 - npm i -g nodemon
     irá baixar um arquivo global no seu usuário
         (Se caso o powershell não permitir utilize o comando: Set-execution policy unrestricted)
@@ -12,6 +19,7 @@
 
 -npm i mongoose
     instalação do mongoose
+
 - mongodb+srv://guilhermevfs:<password>@clustercliente.yaa0v.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
     caminho de conexão
 
